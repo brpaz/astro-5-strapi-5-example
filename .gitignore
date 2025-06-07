@@ -1,3 +1,20 @@
-.DS_Store
+# Ignore node related files
 node_modules/
+
+# Misc
+*.log
+*.cache
+*.tmp
+*.swp
+
+# Build output
+dist/
+build/
+
+# Environment files
 .env
+
+# Deployment files
+deploy/.galaxy
+.ansible
+.vault-pass.txt

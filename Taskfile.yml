@@ -8,20 +8,82 @@ includes:
   client: "./client/Taskfile.yml"
   server: "./server/Taskfile.yml"
 
+vars:
+  ENVIRONMENT: '{{default "production" .ENV}}'
+  VERSION: '{{default "latest" .VERSION}}'
 tasks:
   default:
     cmds:
       - task -l
     silent: true
 
-  up:
-    desc: "Start the application containers"
+  dev:
+    desc: "Start the development environment in watch mode"
     cmds:
       - docker compose up -d --watch
     silent: true
 
   stop:
-    desc: "Stop the application containers"
+    desc: "Stop the development environment"
     cmds:
       - docker compose down
+    silent: true
+
+  ansible-galaxy:
+    desc: "Install Ansible Galaxy roles and collections"
+    dir: "./deploy"
+    cmds:
+      - ansible-galaxy install -r requirements.yml -p .galaxy/roles
+      - ansible-galaxy collection install -r requirements.yml -p .galaxy/collections
+    silent: true
+
+  ansible-lint:
+    desc: "Run Ansible lint"
+    dir: "./deploy"
+    cmds:
+      - ansible-lint . --offline
+    silent: true
+
+  ansible-vault-edit:
+    desc: "Edit Ansible Vault files"
+    dir: "./deploy"
+    cmds:
+      - ansible-vault edit --vault-password-file .vault_pass.txt inventory/{{ .ENVIRONMENT }}/group_vars/vault.yml
+    silent: true
+
+  ansible-ping:
+    desc: "Ping the Ansible hosts"
+    dir: "./deploy"
+    cmds:
+      - ansible -i inventory/{{ .ENVIRONMENT }}/inventory.ini all -m ping
+    silent: true
+
+  deploy-server:
+    desc: "Deploy the server using Ansible"
+    summary: |
+      Deploy server application.
+      Examples:
+        task deploy-server ENV=staging VERSION=1.0.0
+        task deploy-server ENV=production
+    dir: "./deploy"
+    cmds:
+      - task: ansible-galaxy
+      - |
+        ansible-playbook -i inventory/{{ .ENVIRONMENT }}/inventory.ini server.yml \
+          --extra-vars "version={{ .VERSION }} env={{ .ENVIRONMENT }}"
+    silent: true
+
+  deploy-client:
+    desc: "Deploy the client using Ansible"
+    summary: |
+      Deploy client application.
+      Examples:
+        task deploy-client ENV=staging VERSION=1.0.0
+        task deploy-client ENV=production
+    dir: "./deploy"
+    cmds:
+      - task: ansible-galaxy
+      - |
+        ansible-playbook -i inventory/{{ .ENVIRONMENT }}/inventory.ini client.yml \
+          --extra-vars "version={{ .VERSION }} env={{ .ENVIRONMENT }}"
     silent: true

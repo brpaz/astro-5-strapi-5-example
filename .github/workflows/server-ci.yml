@@ -16,7 +16,7 @@ on:
     types: [published]
 
 env:
-  DOCKER_IMAGE_NAME: astro5-strapi5-example/server
+  DOCKER_IMAGE_NAME: ghcr.io/astro5-strapi5-example
 
 permissions:
   packages: write
@@ -42,6 +42,9 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_IMAGE_NAME }}
+          flavor: |
+            latest=auto
+            prefix=server
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -97,4 +100,4 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           event-type: deploy
-          client-payload: '{"app": "server", "tag": "${{ github.event.release.tag_name }}"}'
+          client-payload: '{"app": "server", "tag": "${{ github.event.release.tag_name }}", "environment": "production"}'

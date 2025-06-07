@@ -1,0 +1,6 @@
+roles: []
+collections:
+  - name: community.general
+    version: 10.7.0
+  - name: community.docker
+    version: 4.5.2
