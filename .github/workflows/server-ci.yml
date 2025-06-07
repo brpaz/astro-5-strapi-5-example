@@ -17,6 +17,10 @@ on:
 
 env:
   DOCKER_IMAGE_NAME: astro5-strapi5-example/server
+
+permissions:
+  packages: write
+  contents: write
 jobs:
   build:
     name: Build and Test
