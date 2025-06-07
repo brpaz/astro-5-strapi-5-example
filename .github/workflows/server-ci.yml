@@ -16,7 +16,7 @@ on:
     types: [published]
 
 env:
-  DOCKER_IMAGE_NAME: ghcr.io/astro-5-strapi-5-example
+  DOCKER_IMAGE_NAME: ghcr.io/brpaz/astro-5-strapi-5-example
 
 permissions:
   packages: write
@@ -75,6 +75,8 @@ jobs:
     if: ${{ github.event_name == 'release' &&  startsWith(github.event.release.tag_name, 'server-') }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Update Changelog
         uses: stefanzweifel/changelog-updater-action@v1
@@ -100,4 +102,9 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           event-type: deploy
-          client-payload: '{"app": "server", "tag": "${{ github.event.release.tag_name }}", "environment": "production"}'
+          client-payload: |
+            {
+              "app": "server",
+              "tag": "${{ github.event.release.tag_name }}",
+              "environment": "production"
+            }
