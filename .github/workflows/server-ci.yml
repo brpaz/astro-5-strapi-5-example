@@ -16,7 +16,7 @@ on:
     types: [published]
 
 env:
-  DOCKER_IMAGE_NAME: ghcr.io/astro5-strapi5-example
+  DOCKER_IMAGE_NAME: ghcr.io/astro-5-strapi-5-example
 
 permissions:
   packages: write
