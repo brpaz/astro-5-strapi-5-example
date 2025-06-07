@@ -6,6 +6,7 @@ const strapiPostsLoader = defineCollection({
   // Async loader function that fetches data from Strapi API
   loader: async () => {
     // Get Strapi URL from environment variables or fallback to localhost
+    console.log(import.meta.env.STRAPI_URL);
     const BASE_URL = import.meta.env.STRAPI_URL || "http://localhost:1337";
     const path = "/api/articles";
     const url = new URL(path, BASE_URL);
@@ -22,6 +23,10 @@ const strapiPostsLoader = defineCollection({
     // Fetch articles from Strapi
     const articlesData = await fetch(url.href);
     const { data }= await articlesData.json();
+
+    if (!data || !Array.isArray(data)) {
+      return []
+    }
 
     // Transform the API response into the desired data structure
     return data.map((item) => ({

@@ -1,0 +1,95 @@
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      target: development
+    command: ["pnpm", "run", "dev"]
+    ports:
+      - "${CLIENT_PORT:-4321}:4321"
+    restart: on-failure
+    environment:
+      - HOST="0.0.0.0"
+      - STRAPI_URL=${STRAPI_URL:-http://strapi:1337}
+      - NODE_ENV=${NODE_ENV:-development}
+      - PUBLIC_STRAPI_URL=${STRAPI_URL:-http://strapi:1337}
+    develop:
+      watch:
+        - action: sync
+          path: ./client
+          target: /app
+          ignore:
+            - node_modules/
+            - dist/
+        - action: rebuild
+          path: package.json
+    depends_on:
+      - strapi
+    networks:
+      - app
+
+  strapi:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: build
+    ports:
+      - "${STRAPI_PORT:-1337}:1337"
+    command: ["pnpm", "run", "dev"]
+    environment:
+      - HOST=${STRAPI_HOST:-0.0.0.0}
+      - PORT=${STRAPI_PORT:-1337}
+      - APP_KEYS=${STRAPI_APP_KEYS}
+      - API_TOKEN_SALT=${STRAPI_API_TOKEN_SALT}
+      - ADMIN_JWT_SECRET=${STRAPI_ADMIN_JWT_SECRET}
+      - JWT_SECRET=${STRAPI_JWT_SECRET}
+      - DATABASE_CLIENT=${STRAPI_DATABASE_CLIENT}
+      - DATABASE_HOST=${POSTGRES_HOST}
+      - DATABASE_PORT=${POSTGRES_PORT}
+      - DATABASE_NAME=${POSTGRES_DB}
+      - DATABASE_USERNAME=${POSTGRES_USER}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - TRANSFER_TOKEN_SALT=${STRAPI_TRANSFER_TOKEN_SALT}
+      - NODE_ENV=${NODE_ENV:-production}
+    restart: on-failure
+    develop:
+      watch:
+        - action: sync
+          path: ./server
+          target: /app
+          ignore:
+            - node_modules/
+            - dist/
+        - action: rebuild
+          path: package.json
+    networks:
+      - app
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:17
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+volumes:
+  db_data:
+    driver: local
+  client_node_modules:
+    driver: local
+networks:
+  app:
+    driver: bridge

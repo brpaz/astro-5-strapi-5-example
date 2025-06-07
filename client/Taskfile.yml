@@ -1,0 +1,26 @@
+version: "3"
+tasks:
+  sh:
+    desc: "Open a shell in the Strapi container"
+    cmds:
+      - docker compose exec -it client sh
+    silent: true
+
+  build-docker:
+    desc: "Build the client Docker container"
+    cmds:
+      - docker compose build client
+    silent: true
+
+  dev:
+    desc: "Run the client Docker container"
+    cmds:
+      - docker compose up -d client
+    silent: true
+
+  pnpm:
+    desc: "Run pnpm commands in the client container"
+    cmds:
+      - docker compose exec -it client pnpm {{.CLI_ARGS}}
+    silent: true
+    interactive: true

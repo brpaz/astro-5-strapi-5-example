@@ -1,0 +1,19 @@
+version: 3
+tasks:
+  sh:
+    desc: "Open a shell in the Strapi container"
+    cmds:
+      - docker compose exec -it strapi sh
+    silent: true
+
+  build-docker:
+    desc: "Build the Strapi Docker container"
+    cmds:
+      - docker compose build strapi
+    silent: true
+
+  run:
+    desc: "Run the Strapi Docker container"
+    cmds:
+      - docker compose up -d strapi
+    silent: true
