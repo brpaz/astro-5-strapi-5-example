@@ -43,7 +43,7 @@ jobs:
       ANSIBLE_INVENTORY: inventory/${{ needs.prepare.outputs.environment }}/inventory.ini
     environment:
       name: ${{ needs.prepare.outputs.environment }}
-      url: https://strapi.monorepodeploy.brunopaz.xyz
+      url: ${{ needs.prepare.outputs.app == 'client' && 'https://monorepodeploy.brunopaz.xyz' || 'https://strapi-monorepodeploy.brunopaz.xyz' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

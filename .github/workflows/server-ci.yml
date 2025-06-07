@@ -44,7 +44,7 @@ jobs:
             ${{ env.DOCKER_IMAGE_NAME }}
           flavor: |
             latest=auto
-            prefix=server
+            prefix=server-
           tags: |
             type=ref,event=branch
             type=ref,event=pr
