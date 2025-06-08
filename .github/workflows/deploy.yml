@@ -73,10 +73,15 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > "$SSH_DEPLOY_KEY_FILE"
           chmod 600 "$SSH_DEPLOY_KEY_FILE"
 
+      - name: Setup Ansible Vault password
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASS }}" > ${{ env.ANSIBLE_VAULT_PASSWORD_FILE }}
+          chmod 600 ${{ env.ANSIBLE_VAULT_PASSWORD_FILE }}
+
       - name: Write app version to ansible vars (server)
         if: ${{ needs.prepare.outputs.app == 'server' }}
         run: |
-          sed -i "s/^strapi_image_tag: .*/strapi_image_tag: server-${{ needs.prepare.outputs.tag }}/" ${{ env.DEPLOY_DIR }}/inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml
+          sed -i "s/^strapi_image_tag: .*/strapi_image_tag: ${{ needs.prepare.outputs.tag }}/" ${{ env.DEPLOY_DIR }}/inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml
           cat ${{ env.DEPLOY_DIR }}/inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml
 
       - name: Write app version to ansible vars (client)
