@@ -59,7 +59,7 @@ jobs:
       - name: Install Python dependencies
         working-directory: ${{ env.DEPLOY_DIR }}
         run: |
-          pip install -r deploy/requirements.txt
+          pip install -r requirements.txt
 
       - name: Install Galaxy Roles
         working-directory: ${{ env.DEPLOY_DIR }}
