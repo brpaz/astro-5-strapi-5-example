@@ -62,7 +62,6 @@ jobs:
       - name: Install Galaxy Roles
         working-directory: ${{ env.DEPLOY_DIR }}
         run: |
-          ansible-galaxy install -r requirements.yml
           ansible-galaxy collection install requirements.yml
 
       - name: Setup SSH key
