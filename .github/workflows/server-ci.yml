@@ -18,6 +18,10 @@ on:
 env:
   DOCKER_IMAGE_NAME: ghcr.io/brpaz/astro-5-strapi-5-example
 
+concurrency:
+  group: server-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   packages: write
   contents: write

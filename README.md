@@ -61,7 +61,7 @@ You will be asked to choose if you would like to use Strapi Cloud we will choose
 ``` bash
  Strapi   v5.6.0 🚀 Let's create your new project
 
- 
+
 We can't find any auth credentials in your Strapi config.
 
 Create a free account on Strapi Cloud and benefit from:
@@ -73,16 +73,16 @@ Create a free account on Strapi Cloud and benefit from:
 Start your 14-day free trial now!
 
 
-? Please log in or sign up. 
-  Login/Sign up 
-❯ Skip 
+? Please log in or sign up.
+  Login/Sign up
+❯ Skip
 ```
 
 After you will be asked how you would like to setup your project. We will choose the following options:
 
 ``` bash
 ? Do you want to use the default database (sqlite) ? Yes
-? Start with an example structure & data? Yes <-- make sure you say yes 
+? Start with an example structure & data? Yes <-- make sure you say yes
 ? Start with Typescript? Yes
 ? Install dependencies with npm? Yes
 ? Initialize a git repository? Yes
@@ -155,8 +155,8 @@ We will go with the `basic` setup.
 ``` bash
   tmpl   How would you like to start your new project?
          ● A basic, minimal starter (recommended)
-         ○ Use blog template 
-         ○ Use docs (Starlight) template 
+         ○ Use blog template
+         ○ Use docs (Starlight) template
 ```
 
 Click yes for the remaining questions.
@@ -172,7 +172,7 @@ Click yes for the remaining questions.
 
  next   Liftoff confirmed. Explore your project!
 
- Enter your project directory using cd ./client-temp 
+ Enter your project directory using cd ./client-temp
  Run npm run dev to start the dev server. CTRL+C to stop.
  Add frameworks like react or tailwind using astro add.
 
@@ -196,7 +196,7 @@ Your project should be running at `http://localhost:4321`.
 
 Nice, now that we have our Astro 5 project setup, we can start to integrate it with our Strapi 5 server.
 
-### Building out our Astro 5 Project 
+### Building out our Astro 5 Project
 
 Astro 5 uses a file based routing system. This means that you can create a new file in the `src/pages` folder and it will be automatically added to your project.
 
@@ -239,9 +239,9 @@ function getStrapiMedia(url: string | null) {
 		{strapiPosts.map((post) => (
 			<article class="bg-white rounded-lg shadow-lg overflow-hidden">
 				{/* Post cover image */}
-				<img 
-					src={getStrapiMedia(post.data.cover.url)} 
-					alt={post.data.cover.alternativeText} 
+				<img
+					src={getStrapiMedia(post.data.cover.url)}
+					alt={post.data.cover.alternativeText}
 					class="w-full h-48 object-cover"
 				/>
 				{/* Post content container */}
@@ -259,7 +259,7 @@ function getStrapiMedia(url: string | null) {
 </Layout>
 ```
 Brief Description:
-This is an Astro page component that displays a grid of blog posts fetched from a Strapi CMS. 
+This is an Astro page component that displays a grid of blog posts fetched from a Strapi CMS.
 
 The page features:
 - Integration with Strapi CMS using Astro's content collections
@@ -313,7 +313,7 @@ Astro will run the following command:
  ╰───────────────────────────────────────────────╯
 
 ✔ Continue? … yes
-  
+
    success  Added the following integration to your project:
   - @astrojs/tailwind
 ```

@@ -1,4 +1,0 @@
-# TODO
-
-- Ansible playbook
-- Write to compose file after deploy
