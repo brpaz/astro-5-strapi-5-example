@@ -49,7 +49,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pip"
@@ -59,14 +59,10 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Check connectivity
-        run: curl -I https://galaxy.ansible.com
-
       - name: Install Galaxy Roles
         working-directory: ${{ env.DEPLOY_DIR }}
         run: |
-          ansible-galaxy install -r requirements.yml -p .galaxy/roles
-          ansible-galaxy collection install requirements.yml -p .galaxy/collections
+          ansible-galaxy install -r requirements.yml
 
       - name: Setup SSH key
         env:
