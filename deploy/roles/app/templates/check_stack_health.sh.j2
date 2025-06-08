@@ -1,0 +1,44 @@
+#!/bin/sh
+
+app_name="{{ app_name }}"
+
+# Get the service IDs for the specified app
+service_ids=$(docker service ls --filter label=com.docker.stack.namespace="$app_name" --format '{% raw %}{{.ID}}{% endraw %}')
+if [ -z "$service_ids" ]; then
+  echo "No services found"
+  exit 1
+fi
+
+# Check health status of each service
+unhealthy_count=0
+
+for service_id in $service_ids; do
+  # Get the number of running tasks and the desired number of tasks
+  running_tasks=$(docker service ps --filter "desired-state=running" --format "{% raw %}{{.ID}}{% endraw %}" "$service_id" | wc -l)
+  desired_tasks=$(docker service inspect --format '{% raw %}{{.Spec.Mode.Replicated.Replicas}}{% endraw %}' "$service_id")
+
+  if [ "$running_tasks" -ne "$desired_tasks" ]; then
+    echo "Service $service_id: Desired ($desired_tasks) does not match running ($running_tasks)"
+    unhealthy_count=$((unhealthy_count + 1))
+  else
+    # All tasks are running, check their health status
+    health_status=$(docker service ps --filter "desired-state=running" --format "{% raw %}{{.ID}}{% endraw %}" "$service_id" | xargs -I {} docker inspect --format '{% raw %}{{.State.Health.Status}}{% endraw %}' {} 2>/dev/null)
+
+    # Check if any task is unhealthy
+    for health in $health_status; do
+      if [ "$health" != "healthy" ]; then
+        echo "Service $service_id: One or more tasks are unhealthy"
+        unhealthy_count=$((unhealthy_count + 1))
+        break
+      fi
+    done
+  fi
+done
+
+if [ "$unhealthy_count" -eq 0 ]; then
+  echo "All services: All tasks are healthy"
+  exit 0
+else
+  echo "All services: $unhealthy_count tasks are unhealthy"
+  exit 1
+fi

@@ -40,14 +40,19 @@ services:
       volumes:
           - strapi_data:/app/data
           - strapi_uploads:/app/public/uploads
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.strapi.rule=Host(`{{ strapi_domain }}`)"
-        - "traefik.http.routers.strapi.entrypoints=web"
-        - "traefik.http.services.strapi.loadbalancer.server.port={{ strapi_port }}"
       ports:
         - "{{ strapi_port }}"
+      healthcheck:
+        test: ["CMD-SHELL", "curl -sfL http://localhost:{{ strapi_port }}/_health || exit 1"]
+        interval: 30s
+        timeout: 5s
+        retries: 10
       deploy:
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.strapi.rule=Host(`{{ strapi_domain }}`)"
+          - "traefik.http.routers.strapi.entrypoints=web"
+          - "traefik.http.services.strapi.loadbalancer.server.port={{ strapi_port }}"
         resources:
           limits:
             cpus: '0.50'

@@ -39,6 +39,14 @@
     group: "{{ ansible_user }}"
     mode: "0640"
 
+- name: Copy health check script to the server
+  ansible.builtin.template:
+    src: check_stack_health.sh.j2
+    dest: "{{ app_directory }}/check_stack_health.sh"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0750"
+
 - name: Deploy stack from a compose file
   community.docker.docker_stack:
     state: present
@@ -54,13 +62,13 @@
   delay: 5
   until: service_list.stdout_lines | length == 2
 
-- name: Wait until all replicas are running
-  ansible.builtin.shell: |
-    docker service ls --filter label=com.docker.stack.namespace={{ app_name }} --format '{{"{{.Replicas}}"}}' | grep -v -E '^([0-9]+)/\1$' || true
-  register: replicas_check
+- name: Wait for all services to be healthy
+  ansible.builtin.command:
+    cmd: "sh {{ app_directory }}/check_stack_health.sh"
+  register: health_check
+  until: health_check.rc == 0
   retries: 10
   delay: 10
-  until: replicas_check.stdout_lines | length == 0
 
 - name: Stack is running
   debug:
