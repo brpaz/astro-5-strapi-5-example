@@ -100,4 +100,4 @@ jobs:
         with:
           branch: main
           commit_message: "chore(deploy): [skip-ci] bump ${{ needs.prepare.outputs.app }} to ${{ needs.prepare.outputs.tag }}"
-          file_pattern: "inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml"
+          file_pattern: "deploy/inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml"
