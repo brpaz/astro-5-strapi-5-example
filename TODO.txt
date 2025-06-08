@@ -1,5 +1,4 @@
 # TODO
 
-- Server release pipeline
-- Deploy repository dispatch pipeline
 - Ansible playbook
+- Write to compose file after deploy
