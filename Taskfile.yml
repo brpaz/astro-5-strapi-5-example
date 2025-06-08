@@ -10,7 +10,7 @@ includes:
 
 vars:
   ENVIRONMENT: '{{default "production" .ENV}}'
-  VERSION: '{{default "latest" .VERSION}}'
+  STRAPI_IMAGE_VERSION: '{{default "latest" .STRAPI_IMAGE_VERSION}}'
 tasks:
   default:
     cmds:
@@ -58,32 +58,12 @@ tasks:
       - ansible -i inventory/{{ .ENVIRONMENT }}/inventory.ini all -m ping
     silent: true
 
-  deploy-server:
-    desc: "Deploy the server using Ansible"
-    summary: |
-      Deploy server application.
-      Examples:
-        task deploy-server ENV=staging VERSION=1.0.0
-        task deploy-server ENV=production
+  deploy:
+    desc: "Deploys the application using Ansible"
     dir: "./deploy"
     cmds:
       - task: ansible-galaxy
       - |
-        ansible-playbook -i inventory/{{ .ENVIRONMENT }}/inventory.ini server.yml \
-          --extra-vars "version={{ .VERSION }} env={{ .ENVIRONMENT }}"
-    silent: true
-
-  deploy-client:
-    desc: "Deploy the client using Ansible"
-    summary: |
-      Deploy client application.
-      Examples:
-        task deploy-client ENV=staging VERSION=1.0.0
-        task deploy-client ENV=production
-    dir: "./deploy"
-    cmds:
-      - task: ansible-galaxy
-      - |
-        ansible-playbook -i inventory/{{ .ENVIRONMENT }}/inventory.ini client.yml \
-          --extra-vars "version={{ .VERSION }} env={{ .ENVIRONMENT }}"
+        ansible-playbook -i inventory/{{ .ENVIRONMENT }}/inventory.ini site.yml  \
+          --extra-vars "deploy_app="server" deploy_app_version={{ .STRAPI_IMAGE_VERSION }} env={{ .ENVIRONMENT }}"
     silent: true

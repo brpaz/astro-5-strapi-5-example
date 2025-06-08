@@ -1,0 +1,5 @@
+app_name: "astro5-strapi5-example"
+app_directory: "/var/appdata/{{ app_name }}"
+strapi_image: "ghcr.io/brpaz/astro-5-strapi-5-example"
+strapi_domain: "strapi-monorepodeploy.brunopaz.xyz"
+strapi_port: 1337

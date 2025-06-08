@@ -1,0 +1,89 @@
+
+services:
+  postgres:
+      image: postgres:17-alpine
+      environment:
+          POSTGRES_DB: "{{ strapi_db_name }}"
+          POSTGRES_USER: "{{ strapi_db_user }}"
+          POSTGRES_PASSWORD: "{{ strapi_db_password }}"
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      restart: on-failure
+      ports:
+        - "5432"
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U postgres"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      networks:
+        - monorepo_example
+        - swarm-internal
+
+  strapi:
+      image: "{{ strapi_image }}:{{ strapi_image_tag }}"
+      environment:
+        HOST: "0.0.0.0"
+        PORT: "{{ strapi_port }}"
+        APP_KEYS: "{{ strapi_app_keys }}"
+        API_TOKEN_SALT: "{{ strapi_api_token_salt }}"
+        ADMIN_JWT_SECRET: "{{ strapi_admin_jwt_secret }}"
+        JWT_SECRET: "{{ strapi_jwt_secret }}"
+        DATABASE_CLIENT: "postgres"
+        TRANSFER_TOKEN_SALT: "{{ strapi_transfer_token_salt }}"
+        DATABASE_HOST: "astro5-strapi5-example_postgres"
+        DATABASE_PORT: 5432
+        DATABASE_NAME: "{{ strapi_db_name }}"
+        DATABASE_USERNAME: "{{ strapi_db_user }}"
+        DATABASE_PASSWORD: "{{ strapi_db_password }}"
+        NODE_ENV: "production"
+      volumes:
+          - strapi_data:/app/data
+          - strapi_uploads:/app/public/uploads
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.strapi.rule=Host(`{{ strapi_domain }}`)"
+        - "traefik.http.routers.strapi.entrypoints=web"
+        - "traefik.http.services.strapi.loadbalancer.server.port={{ strapi_port }}"
+      ports:
+        - "{{ strapi_port }}"
+      deploy:
+        resources:
+          limits:
+            cpus: '0.50'
+            memory: 512M
+          reservations:
+            cpus: '0.25'
+            memory: 256M
+      restart: on-failure
+      networks:
+        - monorepo_example
+        - traefik-public
+        - swarm-internal
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "{{ app_directory }}/data/postgres"
+  strapi_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "{{ app_directory }}/data/strapi"
+  strapi_uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "{{ app_directory }}/data/uploads"
+
+networks:
+  monorepo_example:
+    driver: overlay
+  traefik-public:
+    external: true
+  swarm-internal:
+    external: true

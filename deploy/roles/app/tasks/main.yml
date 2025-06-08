@@ -1,3 +1,67 @@
-- name: Hello
-  ansible.builtin.debug:
-    msg: "Hello, world!"
+- name: Validate required variables
+  ansible.builtin.assert:
+    that:
+      - strapi_db_name is defined
+      - strapi_db_user is defined
+      - strapi_db_password is defined
+      - strapi_api_token_salt is defined
+      - strapi_admin_jwt_secret is defined
+      - strapi_jwt_secret is defined
+      - strapi_transfer_token_salt is defined
+      - strapi_image_tag is defined
+
+- name: Ensure Application Directory Exists
+  ansible.builtin.file:
+    path: "{{ app_directory }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0750"
+
+- name: Ensure Volume Directories Exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0750"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  loop:
+    - "{{ app_directory }}/data/postgres"
+    - "{{ app_directory }}/data/strapi"
+    - "{{ app_directory }}/data/uploads"
+  ignore_errors: true # TODO to ignore errors related with permissions changed by docker
+
+- name: Copy Docker Compose file to the server
+  ansible.builtin.template:
+    src: stack.yml.j2
+    dest: "{{ app_directory }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0640"
+
+- name: Deploy stack from a compose file
+  community.docker.docker_stack:
+    state: present
+    name: "{{ app_name }}"
+    compose:
+      - "{{ app_directory }}/docker-compose.yml"
+
+- name: Wait until services exist in the stack
+  ansible.builtin.shell: |
+    docker service ls --filter label=com.docker.stack.namespace={{ app_name }} --format '{{"{{.ID}}"}}'
+  register: service_list
+  retries: 10
+  delay: 5
+  until: service_list.stdout_lines | length == 2
+
+- name: Wait until all replicas are running
+  ansible.builtin.shell: |
+    docker service ls --filter label=com.docker.stack.namespace={{ app_name }} --format '{{"{{.Replicas}}"}}' | grep -v -E '^([0-9]+)/\1$' || true
+  register: replicas_check
+  retries: 10
+  delay: 10
+  until: replicas_check.stdout_lines | length == 0
+
+- name: Stack is running
+  debug:
+    msg: "Stack {{ app_name }} is running and all services are ready."

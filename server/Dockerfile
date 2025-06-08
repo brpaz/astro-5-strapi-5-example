@@ -23,7 +23,7 @@ FROM base AS production
 ENV NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
-RUN apk add --no-cache vips-dev
+RUN apk add --no-cache vips-dev curl
 
 COPY --from=build /app/ /app/
 COPY --from=prod-deps /app/node_modules /app/node_modules

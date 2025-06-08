@@ -6,7 +6,6 @@ on:
       app:
         description: "Application to deploy"
         required: true
-        default: "server"
         type: choice
         options:
           - server
@@ -23,10 +22,12 @@ on:
         options:
           - production
   repository_dispatch:
-    types: [deploy]
+    types: [docker_image_published]
 
 env:
   PYTHON_VERSION: "3.12"
+  IMAGE_NAME: "ghcr.io/astro5-strapi5-example"
+  DEPLOY_DIR: "deploy"
 jobs:
   prepare:
     runs-on: ubuntu-latest
@@ -54,12 +55,12 @@ jobs:
           cache: "pip"
 
       - name: Install Python dependencies
-        working-directory: ./deploy
+        working-directory: ${{ env.DEPLOY_DIR }}
         run: |
           pip install -r deploy/requirements.txt
 
       - name: Install Galaxy Roles
-        working-directory: ./deploy
+        working-directory: ${{ env.DEPLOY_DIR }}
         run: |
           ansible-galaxy install -r requirements.yml
           ansible-galaxy collection install requirements.yml
@@ -73,8 +74,26 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > $SSH_DEPLOY_KEY_FILE
           chmod 600 $SSH_DEPLOY_KEY_FILE
 
-      - name: Run Ansible playbook
-        working-directory: ./deploy
+      - name: Write app version to ansible vars (server)
+        if: ${{ needs.prepare.outputs.app == 'server' }}
         run: |
-          ansible-playbook server.yml
-            --extra-vars "app=${{ needs.prepare.outputs.app }} version=${{ needs.prepare.outputs.tag }} env=${{ needs.prepare.outputs.environment }}"
+          sed -i "s/^strapi_image_tag: .*/strapi_image_tag: server-${{ needs.prepare.outputs.tag }}/" ${{ env.DEPLOY_DIR }}/inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml
+          cat ${{ env.DEPLOY_DIR }}/inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml
+
+      - name: Write app version to ansible vars (client)
+        if: ${{ needs.prepare.outputs.app == 'client' }}
+        run: |
+          sed -i "s/^app_version: .*/app_version: client-${{ needs.prepare.outputs.tag }}/" ${{ env.DEPLOY_DIR }}/inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml
+          cat ${{ env.DEPLOY_DIR }}/inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml
+
+      - name: Run Ansible playbook
+        working-directory: ${{ env.DEPLOY_DIR }}
+        run: |
+          ansible-playbook site.yml
+
+      - name: Commit updated versions
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: main
+          commit_message: "chore(deploy): [skip-ci] bump ${{ needs.prepare.outputs.app }} to ${{ needs.prepare.outputs.tag }}"
+          file_pattern: "inventory/${{ needs.prepare.outputs.environment }}/group_vars/all.yml"

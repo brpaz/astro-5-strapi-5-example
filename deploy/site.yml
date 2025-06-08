@@ -1,0 +1,7 @@
+---
+- name: Application
+  hosts: all
+  vars_files:
+    - inventory/{{ env }}/group_vars/vault.yml
+  roles:
+    - app
