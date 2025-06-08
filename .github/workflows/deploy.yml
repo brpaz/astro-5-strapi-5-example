@@ -48,8 +48,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-python@v4
         with:
@@ -60,12 +58,15 @@ jobs:
         working-directory: ${{ env.DEPLOY_DIR }}
         run: |
           pip install -r requirements.txt
-          ansible --version
+
+      - name: Check connectivity
+        run: curl -I https://galaxy.ansible.com
 
       - name: Install Galaxy Roles
         working-directory: ${{ env.DEPLOY_DIR }}
         run: |
-          ansible-galaxy collection install requirements.yml --force --pre -vvv
+          ansible-galaxy install -r requirements.yml -p .galaxy/roles
+          ansible-galaxy collection install requirements.yml -p .galaxy/collections
 
       - name: Setup SSH key
         env:
