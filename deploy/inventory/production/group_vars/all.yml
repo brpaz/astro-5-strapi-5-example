@@ -1,4 +1,4 @@
 # ===================================
 # Application versions
 # ===================================
-strapi_image_tag: "server-v0.1.1"
+strapi_image_tag: server-v0.1.2
