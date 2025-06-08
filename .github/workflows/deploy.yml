@@ -17,10 +17,8 @@ on:
       environment:
         description: "Environment to deploy"
         required: true
-        default: "production"
-        type: choice
-        options:
-          - production
+        default: production
+        type: environment
   repository_dispatch:
     types: [docker_image_published]
 
